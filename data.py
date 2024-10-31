@@ -1,14 +1,13 @@
-
-import numpy as np
-from numpy import NaN as npNaN
-import pandas as pd
+# import numpy as np
+# from numpy import NaN as npNaN
+# import pandas as pd
 import yfinance as yf
 
 import pandas_ta as ta # Technical Indicators
 
-from sklearn.linear_model import LogisticRegression
-from sklearn import metrics
-from sklearn.model_selection import cross_val_score
+# from sklearn.linear_model import LogisticRegression
+# from sklearn import metrics
+# from sklearn.model_selection import cross_val_score
 
 # return dataframe of given ticker symbol with relevant indicators
 def get_indicator_data(ticker):
