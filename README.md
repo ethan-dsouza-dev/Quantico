@@ -1,5 +1,8 @@
 # Quantitative Prediction model 
 
+## Mission
+To empower individuals without technical expertise by providing accessible, user-friendly trading tools that enable informed financial decisions.
+
 ## What does this application do
 
 - Forecast stock market trends by analyzing historical data, economic indicators, and company-specific factors.
