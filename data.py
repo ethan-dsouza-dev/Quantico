@@ -25,10 +25,11 @@ def get_indicator_data(ticker):
     df['OBV'] = ta.obv(df['Close'], df['Volume'])
 
     # Identifies Overbought/Oversold conditions like RSI but is volume weighted
-    # df['MFI'] = ta.mfi(df['High'], df['Low'], df['Close'], df['Volume'], length=14)
+    df['MFI'] = ta.mfi(df['High'], df['Low'], df['Close'], df['Volume'], length=14)
 
     # detects whether more money is flowing in or out of a stock
-    # df['Accum/Dist'] = ta.ad(df['High'], df['Low'], df['Close'], df['Volume'])
+    df['Accum/Dist'] = ta.ad(df['High'], df['Low'], df['Close'], df['Volume'])
+    # TODO: maybe not drop this
     df = df.dropna()
     return df
 
