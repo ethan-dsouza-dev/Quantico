@@ -12,7 +12,9 @@ To empower individuals without technical expertise by providing accessible, user
 
 ## Who is this made for
 
-- Financial analysts quantitative reserachers, individual investors seeking a data driven approach to stock forecasting.
+- Financial analysts
+- Quantitative reserachers
+- Individual investors seeking a data driven approach to stock forecasting.
 
 ## What makes this project interesting
 This projects allows us to apply quantitative analysis and machine learning to finance, a field we find both intellectually challenging and impactful. It combines data science, finance, and economic insights to make forecasting more accurate and accessible, moving away from biased "buy" rating seen on many financial websites. Building a model that automates this process would make financial reserach less reliant on qualitative subjects.
