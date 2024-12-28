@@ -173,8 +173,8 @@ def tgan(dataX, parameters):
     # Shuffle, batch, and prefetch
     dataset = (
         tf.data.Dataset.from_tensor_slices((dataXnp, dataTnp))
-        .shuffle(buffer_size=1000)
-        .batch(batch_size)
+        .shuffle(buffer_size=1000, reshuffle_each_iteration=True)
+        .batch(batch_size, drop_remainder=True)
         .prefetch(buffer_size=tf.data.AUTOTUNE)
         .repeat()  # Enables the dataset to be infinite
     )
@@ -237,3 +237,29 @@ def tgan(dataX, parameters):
 
     print('Finish Joint Training')
     print('hello')
+    # Random Generator Function
+    def random_generator(No, z_dim, dataT, Max_Seq_Len):
+        Z_mb = []
+        for i in range(No):
+            Temp = np.zeros([Max_Seq_Len, z_dim], dtype=np.float32)
+            Temp_Z = np.random.uniform(0., 1., [dataT[i], z_dim])
+            Temp[:dataT[i], :] = Temp_Z
+            Z_mb.append(Temp)
+        return tf.convert_to_tensor(Z_mb, dtype=tf.float32)
+    Z_mb = random_generator(No, z_dim, dataT, Max_Seq_Len)
+    H_hat = generator(Z_mb)
+    X_hat = recovery(H_hat)
+
+    dataX_hat = list()
+    
+    for i in range(No):
+        Temp = X_hat[i,:dataT[i],:]
+        dataX_hat.append(Temp)
+        
+    # Renormalization
+    if (Normalization_Flag == 1):
+        dataX_hat = dataX_hat * max_val
+        dataX_hat = dataX_hat + min_val
+    
+    
+    return dataX_hat
