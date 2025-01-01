@@ -10,7 +10,9 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "python": "/opt/homebrew/Caskroom/miniconda/base/envs/my_new_env/bin/python" // Replace with your Conda env path"
+            "python": "/opt/homebrew/Caskroom/miniconda/base/envs/my_new_env/bin/python", // Replace with your Conda env path",
+            // "justMyCode": false
+
         }
     ]
 }

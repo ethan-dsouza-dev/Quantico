@@ -236,30 +236,68 @@ def tgan(dataX, parameters):
             print(f"Iter: {itt}, D_loss: {step_d_loss.numpy():.4f}")
 
     print('Finish Joint Training')
-    print('hello')
-    # Random Generator Function
-    def random_generator(No, z_dim, dataT, Max_Seq_Len):
-        Z_mb = []
-        for i in range(No):
-            Temp = np.zeros([Max_Seq_Len, z_dim], dtype=np.float32)
-            Temp_Z = np.random.uniform(0., 1., [dataT[i], z_dim])
-            Temp[:dataT[i], :] = Temp_Z
-            Z_mb.append(Temp)
-        return tf.convert_to_tensor(Z_mb, dtype=tf.float32)
-    Z_mb = random_generator(No, z_dim, dataT, Max_Seq_Len)
-    H_hat = generator(Z_mb)
-    X_hat = recovery(H_hat)
+    # print('hello')
+    # # Random Generator Function
+    # def random_generator(No, z_dim, dataT, Max_Seq_Len):
+    #     Z_mb = []
+    #     for i in range(No):
+    #         Temp = np.zeros([Max_Seq_Len, z_dim], dtype=np.float32)
+    #         Temp_Z = np.random.uniform(0., 1., [dataT[i], z_dim])
+    #         Temp[:dataT[i], :] = Temp_Z
+    #         Z_mb.append(Temp)
+    #     return tf.convert_to_tensor(Z_mb, dtype=tf.float32)
+    # Z_mb = random_generator(No, z_dim, dataT, Max_Seq_Len)
+    # H_hat = generator(Z_mb)
+    # X_hat = recovery(H_hat)
 
-    dataX_hat = list()
+    # dataX_hat = list()
     
-    for i in range(No):
-        Temp = X_hat[i,:dataT[i],:]
-        dataX_hat.append(Temp)
+    # for i in range(No):
+    #     Temp = X_hat[i,:dataT[i],:]
+    #     dataX_hat.append(Temp)
         
-    # Renormalization
-    if (Normalization_Flag == 1):
-        dataX_hat = dataX_hat * max_val
-        dataX_hat = dataX_hat + min_val
+    # # Renormalization
+    # if (Normalization_Flag == 1):
+    #     dataX_hat = dataX_hat * max_val
+    #     dataX_hat = dataX_hat + min_val
+
+    # return dataX_hat
+
+        # Random Generator Function for Forecasting
+    def generate_forecast(generator, recovery, steps=50, z_dim=10, max_val=1.0, min_val=0.0, normalization_flag=1):
+        """
+        Generates a forecast for a fixed number of future time steps.
+
+        Parameters:
+        - generator: The generator model.
+        - recovery: The recovery model (maps latent space to data space).
+        - steps: Number of time steps to forecast.
+        - z_dim: Dimensionality of the latent space.
+        - max_val, min_val: Values for renormalization.
+        - normalization_flag: Whether to apply renormalization.
+
+        Returns:
+        - forecast: The generated forecast for the given number of steps.
+        """
+        # Generate random noise for forecasting
+        noise = np.random.uniform(0., 1., (steps, z_dim)).astype(np.float32)
+        noise_tensor = tf.convert_to_tensor([noise], dtype=tf.float32)  # Add batch dimension
+
+        # Pass through generator and recovery models
+        H_hat = generator(noise_tensor)  # Latent space output
+        X_hat = recovery(H_hat)         # Map latent space back to data space
+
+        # Extract forecast (remove batch dimension)
+        forecast = X_hat.numpy()[0]  # Shape: (steps, feature_dim)
+
+        # Renormalization
+        if normalization_flag == 1:
+            forecast = forecast * max_val
+            forecast = forecast + min_val
+
+        return forecast
+
+    forecast = generate_forecast(generator, recovery, steps=50, z_dim=z_dim, max_val=1.0, min_val=0.0, normalization_flag=0)
+    return forecast
     
     
-    return dataX_hat

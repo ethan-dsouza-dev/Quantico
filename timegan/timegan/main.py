@@ -44,7 +44,8 @@ from data_loading import google_data_loading, sine_data_generation
 sys.path.append('metrics')
 from discriminative_score_metrics import discriminative_score_metrics
 from visualization_metrics import PCA_Analysis, tSNE_Analysis
-from predictive_score_metrics_v2 import predictive_score_metrics
+# from predictive_score_metrics import predictive_score_metrics
+from predictive_score_metrics_2 import predictive_score_metrics
 
 #%% Main Parameters
 # Data
@@ -73,7 +74,7 @@ parameters = dict()
 parameters['hidden_dim'] = len(dataX[0][0,:]) * 4
 parameters['num_layers'] = 3
 # parameters['iterations'] = 50000
-parameters['iterations'] = 1000
+parameters['iterations'] = 100
 parameters['batch_size'] = 128
 parameters['module_name'] = 'lstm'   # Other options: 'lstm' or 'lstmLN'
 parameters['z_dim'] = len(dataX[0][0,:]) 
@@ -88,7 +89,7 @@ for it in range(Iteration):
 
     # Synthetic Data Generation
     # print(dataX, parameters)
-    print(len(dataX), parameters)
+    # print(len(dataX), parameters)
     dataX_hat = tgan(dataX, parameters)   
       
     print('Finish Synthetic Data Generation')
@@ -104,11 +105,11 @@ for it in range(Iteration):
     # Discriminative_Score.append(np.mean(Acc))
     
     # 2. Predictive Performance
-    MAE_All = list()
-    for tt in range(Sub_Iteration):
-        MAE_All.append(predictive_score_metrics (dataX, dataX_hat))
+    # MAE_All = list()
+    # for tt in range(Sub_Iteration):
+    #     MAE_All.append(predictive_score_metrics (dataX, dataX_hat))
         
-    Predictive_Score.append(np.mean(MAE_All))        
+    # Predictive_Score.append(np.mean(MAE_All))        
         
 #%% 3. Visualization
 # PCA_Analysis (dataX, dataX_hat)

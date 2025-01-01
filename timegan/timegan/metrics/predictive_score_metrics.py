@@ -32,7 +32,7 @@ from sklearn.metrics import mean_absolute_error
 def predictive_score_metrics (dataX, dataX_hat):
   
     # Initialization on the Graph
-    tf.reset_default_graph()
+    # tf.reset_default_graph()
 
     # Basic Parameters
     No = len(dataX)
