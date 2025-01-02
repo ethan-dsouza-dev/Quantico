@@ -46,6 +46,10 @@ from discriminative_score_metrics import discriminative_score_metrics
 from visualization_metrics import PCA_Analysis, tSNE_Analysis
 # from predictive_score_metrics import predictive_score_metrics
 from predictive_score_metrics_2 import predictive_score_metrics
+import pandas as pd
+
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 
 #%% Main Parameters
 # Data
@@ -66,6 +70,10 @@ elif data_name == 'sine':
     F_No = 5
     dataX = sine_data_generation(No, seq_length, F_No)
 
+split_index = int(len(dataX) * 0.8)
+dataX_test = dataX[split_index:]  # Last 20%
+dataX = dataX[:split_index]       # First 80%
+
 print(data_name + ' dataset is ready.')
 
 #%% Newtork Parameters
@@ -73,8 +81,8 @@ parameters = dict()
 
 parameters['hidden_dim'] = len(dataX[0][0,:]) * 4
 parameters['num_layers'] = 3
-# parameters['iterations'] = 50000
-parameters['iterations'] = 100
+parameters['iterations'] = 50000
+# parameters['iterations'] = 100
 parameters['batch_size'] = 128
 parameters['module_name'] = 'lstm'   # Other options: 'lstm' or 'lstmLN'
 parameters['z_dim'] = len(dataX[0][0,:]) 
@@ -88,9 +96,18 @@ Predictive_Score = list()
 for it in range(Iteration):
 
     # Synthetic Data Generation
-    # print(dataX, parameters)
-    # print(len(dataX), parameters)
-    dataX_hat = tgan(dataX, parameters)   
+    dataX_test_hat = tgan(dataX, parameters)   
+
+    headers = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+    # Convert forecast to a pandas DataFrame
+    # Assuming forecast has shape (24, z_dim) and z_dim = 6
+    forecast_df = pd.DataFrame(dataX_test_hat, columns=headers)
+
+    # Filepath to save the CSV
+    csv_file_path = f"forecast_output_{it}.csv"
+
+    # Export to CSV
+    forecast_df.to_csv(csv_file_path, index=False)
       
     print('Finish Synthetic Data Generation')
 
@@ -112,9 +129,9 @@ for it in range(Iteration):
     # Predictive_Score.append(np.mean(MAE_All))        
         
 #%% 3. Visualization
-# PCA_Analysis (dataX, dataX_hat)
-# tSNE_Analysis (dataX, dataX_hat)
+# PCA_Analysis (np.array(dataX_test), dataX_test_hat)
+# tSNE_Analysis (np.array(dataX_test), dataX_test_hat)
 
 # Print Results
 # print('Discriminative Score - Mean: ' + str(np.round(np.mean(Discriminative_Score),4)) + ', Std: ' + str(np.round(np.std(Discriminative_Score),4)))
-print('Predictive Score - Mean: ' + str(np.round(np.mean(Predictive_Score),4)) + ', Std: ' + str(np.round(np.std(Predictive_Score),4)))
+# print('Predictive Score - Mean: ' + str(np.round(np.mean(Predictive_Score),4)) + ', Std: ' + str(np.round(np.std(Predictive_Score),4)))

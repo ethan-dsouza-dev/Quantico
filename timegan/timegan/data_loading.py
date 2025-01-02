@@ -28,12 +28,17 @@ Outputs
 
 #%% Necessary Packages
 import numpy as np
+import pickle
 
 #%% Min Max Normalizer
 
 def MinMaxScaler(data):
     numerator = data - np.min(data, 0)
     denominator = np.max(data, 0) - np.min(data, 0)
+    pkl_file_path = "normalization_params.pkl"
+    with open(pkl_file_path, 'wb') as file:
+        last_24 = data[:24, ]
+        pickle.dump({"max_val": np.max(last_24, 0), "min_val": np.min(last_24, 0)}, file)
     return numerator / (denominator + 1e-7)
 
 #%% Load Google Data

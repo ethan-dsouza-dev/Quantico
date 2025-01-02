@@ -4,8 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
-print(tf.__version__)
-print(np.__version__)
+import pickle
 
 # Min Max Normalizer
 def MinMaxScaler(dataX):
@@ -292,12 +291,16 @@ def tgan(dataX, parameters):
 
         # Renormalization
         if normalization_flag == 1:
-            forecast = forecast * max_val
-            forecast = forecast + min_val
+            pkl_file_path = "normalization_params.pkl"
+            with open(pkl_file_path, 'rb') as file:
+                normalization_params = pickle.load(file)
+                recovered_max_val = normalization_params["max_val"]
+                recovered_min_val = normalization_params["min_val"]
 
+            forecast = forecast * (recovered_max_val - recovered_min_val) + recovered_min_val
         return forecast
 
-    forecast = generate_forecast(generator, recovery, steps=50, z_dim=z_dim, max_val=1.0, min_val=0.0, normalization_flag=0)
+    forecast = generate_forecast(generator, recovery, steps=24, z_dim=z_dim, max_val=1.0, min_val=0.0, normalization_flag=1)
     return forecast
     
     
