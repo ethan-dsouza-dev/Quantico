@@ -42,10 +42,9 @@ from data_loading import google_data_loading, sine_data_generation
 
 # 3. Metrics
 sys.path.append('metrics')
-from discriminative_score_metrics import discriminative_score_metrics
-from visualization_metrics import PCA_Analysis, tSNE_Analysis
+# from discriminative_score_metrics import discriminative_score_metrics
+# from visualization_metrics import PCA_Analysis, tSNE_Analysis
 # from predictive_score_metrics import predictive_score_metrics
-from predictive_score_metrics_2 import predictive_score_metrics
 import pandas as pd
 
 from sklearn.decomposition import PCA
@@ -57,7 +56,7 @@ data_set = ['google','sine']
 data_name = data_set[0]
 
 # Experiments iterations
-Iteration = 2
+Iteration = 1
 Sub_Iteration = 10
 
 #%% Data Loading
@@ -70,10 +69,6 @@ elif data_name == 'sine':
     F_No = 5
     dataX = sine_data_generation(No, seq_length, F_No)
 
-split_index = int(len(dataX) * 0.8)
-dataX_test = dataX[split_index:]  # Last 20%
-dataX = dataX[:split_index]       # First 80%
-
 print(data_name + ' dataset is ready.')
 
 #%% Newtork Parameters
@@ -81,10 +76,10 @@ parameters = dict()
 
 parameters['hidden_dim'] = len(dataX[0][0,:]) * 4
 parameters['num_layers'] = 3
-parameters['iterations'] = 50000
-# parameters['iterations'] = 100
+# parameters['iterations'] = 50000
+parameters['iterations'] = 100
 parameters['batch_size'] = 128
-parameters['module_name'] = 'lstm'   # Other options: 'lstm' or 'lstmLN'
+parameters['module_name'] = 'lstm'   # Other options: 'gru' or 'lstmLN'
 parameters['z_dim'] = len(dataX[0][0,:]) 
 
 #%% Experiments
@@ -96,17 +91,13 @@ Predictive_Score = list()
 for it in range(Iteration):
 
     # Synthetic Data Generation
-    dataX_test_hat = tgan(dataX, parameters)   
+    dataX_hat = tgan(dataX, parameters, it)   
 
-    headers = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
     # Convert forecast to a pandas DataFrame
     # Assuming forecast has shape (24, z_dim) and z_dim = 6
-    forecast_df = pd.DataFrame(dataX_test_hat, columns=headers)
-
-    # Filepath to save the CSV
+    headers = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+    forecast_df = pd.DataFrame(dataX_hat, columns=headers)
     csv_file_path = f"forecast_output_{it}.csv"
-
-    # Export to CSV
     forecast_df.to_csv(csv_file_path, index=False)
       
     print('Finish Synthetic Data Generation')

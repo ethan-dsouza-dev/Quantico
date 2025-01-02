@@ -2,9 +2,18 @@
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
 import pickle
+import time
+from models import Embedder, Recovery, Generator, Supervisor, Discriminator
+
+
+physical_devices = tf.config.list_physical_devices('GPU')
+if physical_devices:
+    print("TensorFlow is using Metal for GPU acceleration.")
+    for device in physical_devices:
+        print(f"GPU device detected: {device}")
+else:
+    print("No GPU found. TensorFlow is using CPU.")
 
 # Min Max Normalizer
 def MinMaxScaler(dataX):
@@ -17,63 +26,7 @@ def MinMaxScaler(dataX):
     
     return dataX, min_val, max_val
 
-class Embedder(tf.keras.Model):
-    def __init__(self, hidden_dim, num_layers):
-        super(Embedder, self).__init__()
-        self.rnn = Sequential([
-            LSTM(hidden_dim, return_sequences=True) for _ in range(num_layers)
-        ])
-        self.dense = Dense(hidden_dim, activation='sigmoid')
-    
-    def call(self, X):
-        H = self.rnn(X)
-        return self.dense(H)
-
-class Recovery(tf.keras.Model):
-    def __init__(self, data_dim, hidden_dim, num_layers):
-        super(Recovery, self).__init__()
-        self.rnn = Sequential([
-            LSTM(hidden_dim, return_sequences=True) for _ in range(num_layers)
-        ])
-        self.dense = Dense(data_dim, activation='sigmoid')
-    
-    def call(self, H):
-        return self.dense(self.rnn(H))
-
-class Generator(tf.keras.Model):
-    def __init__(self, hidden_dim, num_layers):
-        super(Generator, self).__init__()
-        self.rnn = Sequential([
-            LSTM(hidden_dim, return_sequences=True) for _ in range(num_layers)
-        ])
-        self.dense = Dense(hidden_dim, activation='sigmoid')
-    
-    def call(self, Z):
-        return self.dense(self.rnn(Z))
-
-class Supervisor(tf.keras.Model):
-    def __init__(self, hidden_dim, num_layers):
-        super(Supervisor, self).__init__()
-        self.rnn = Sequential([
-            LSTM(hidden_dim, return_sequences=True) for _ in range(num_layers - 1)
-        ])
-        self.dense = Dense(hidden_dim, activation='sigmoid')
-    
-    def call(self, H):
-        return self.dense(self.rnn(H))
-
-class Discriminator(tf.keras.Model):
-    def __init__(self, hidden_dim, num_layers):
-        super(Discriminator, self).__init__()
-        self.rnn = Sequential([
-            LSTM(hidden_dim, return_sequences=True) for _ in range(num_layers)
-        ])
-        self.dense = Dense(1, activation=None)
-    
-    def call(self, H):
-        return self.dense(self.rnn(H))
-
-def tgan(dataX, parameters):
+def tgan(dataX, parameters, it):
     # Basic Parameters
     No = len(dataX)
     data_dim = len(dataX[0][0,:])
@@ -103,13 +56,6 @@ def tgan(dataX, parameters):
     module_name  = parameters['module_name']    # 'lstm' or 'lstmLN'
     z_dim        = parameters['z_dim']
     gamma        = 1
-
-    # X = tf.placeholder(tf.float32, [None, Max_Seq_Len, data_dim], name = "myinput_x")
-    # Z = tf.placeholder(tf.float32, [None, Max_Seq_Len, z_dim], name = "myinput_z")
-    # T = tf.placeholder(tf.int32, [None], name = "myinput_t")
-    # X = tf.random.normal([batch_size, Max_Seq_Len, data_dim])  # Simulated input data
-    # Z = tf.random.normal([batch_size, Max_Seq_Len, z_dim])     # Random noise for generator
-    # T = tf.random.uniform([batch_size], maxval=Max_Seq_Len, dtype=tf.int32)  # Sequence lengths
 
     # Network Initialization
     embedder = Embedder(hidden_dim=hidden_dim, num_layers=num_layers)
@@ -180,6 +126,7 @@ def tgan(dataX, parameters):
 
     # import time
     # Embedder Training
+    start = time.time()
     for itt, (X_mb, T_mb) in enumerate(dataset.take(iterations)):
     # for itt in range(iterations):
         # Select batch
@@ -195,12 +142,14 @@ def tgan(dataX, parameters):
         step_e_loss = train_embedder(X_mb, T_mb, embedder, recovery)
 
         if itt % 1000 == 0:
-            print(f"Iter: {itt}, E_loss: {step_e_loss.numpy():.4f}")
+            print(f"Iter: {itt} took {time.time() - start}s, E_loss: {step_e_loss.numpy():.4f}")
+            start = time.time()
     
     # Just a lambda function to generate random noise for batch_size
     Z_mb = lambda batch_size: tf.random.uniform((batch_size, Max_Seq_Len, z_dim))
 
     # Supervised Training
+    start = time.time()
     for itt, (X_mb, T_mb) in enumerate(dataset.take(iterations)):
     # for itt in range(iterations):
         # Select batch
@@ -215,9 +164,11 @@ def tgan(dataX, parameters):
         step_g_loss = train_generator(Z_batch, embedder(X_mb), T_mb, generator, supervisor, discriminator)
 
         if itt % 1000 == 0:
-            print(f"Iter: {itt}, G_loss: {step_g_loss.numpy():.4f}")
+            print(f"Iter: {itt} took {time.time() - start}s, G_loss: {step_g_loss.numpy():.4f}")
+            start = time.time()
 
     # Joint Training
+    start = time.time()
     for itt, (X_mb, T_mb) in enumerate(dataset.take(iterations)):
     # for itt in range(iterations):
         # Select batch
@@ -232,10 +183,11 @@ def tgan(dataX, parameters):
         step_d_loss = train_discriminator(X_mb, Z_batch, T_mb, embedder, generator, discriminator)
 
         if itt % 1000 == 0:
-            print(f"Iter: {itt}, D_loss: {step_d_loss.numpy():.4f}")
+            print(f"Iter: {itt} took {time.time() - start}s, D_loss: {step_d_loss.numpy():.4f}")
+            start = time.time()
 
     print('Finish Joint Training')
-    # print('hello')
+
     # # Random Generator Function
     # def random_generator(No, z_dim, dataT, Max_Seq_Len):
     #     Z_mb = []
@@ -261,6 +213,12 @@ def tgan(dataX, parameters):
     #     dataX_hat = dataX_hat + min_val
 
     # return dataX_hat
+
+    generator.save(f"models/generator_{it}.keras")
+    discriminator.save(f"models/discriminator_{it}.keras")
+    recovery.save(f"models/recovery_{it}.keras")
+    supervisor.save(f"models/supervisor_{it}.keras")
+    embedder.save(f"models/embedder_{it}.keras")
 
         # Random Generator Function for Forecasting
     def generate_forecast(generator, recovery, steps=50, z_dim=10, max_val=1.0, min_val=0.0, normalization_flag=1):
@@ -296,11 +254,11 @@ def tgan(dataX, parameters):
                 normalization_params = pickle.load(file)
                 recovered_max_val = normalization_params["max_val"]
                 recovered_min_val = normalization_params["min_val"]
-
             forecast = forecast * (recovered_max_val - recovered_min_val) + recovered_min_val
+
         return forecast
 
-    forecast = generate_forecast(generator, recovery, steps=24, z_dim=z_dim, max_val=1.0, min_val=0.0, normalization_flag=1)
+    forecast = generate_forecast(generator, recovery, steps=24, z_dim=z_dim, max_val=1.0, min_val=0.0, normalization_flag=0)
     return forecast
     
     
