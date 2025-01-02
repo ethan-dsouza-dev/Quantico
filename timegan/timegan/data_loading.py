@@ -46,7 +46,9 @@ def MinMaxScaler(data):
 def google_data_loading (seq_length):
 
     # Load Google Data
-    x = np.loadtxt('data/GOOGLE_BIG.csv', delimiter = ",",skiprows = 1)
+    # x = np.loadtxt('data/GOOGLE_BIG.csv', delimiter = ",",skiprows = 1)
+    # Loading Apple data
+    x = np.loadtxt('data/AAPL_data.csv', delimiter = ",",skiprows = 1)
     # Flip the data to make chronological data
     x = x[::-1]
     # Min-Max Normalizer
