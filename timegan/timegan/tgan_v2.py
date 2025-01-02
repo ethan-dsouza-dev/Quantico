@@ -72,7 +72,7 @@ def tgan(dataX, parameters, it):
     # Optimizers
     # TODO: what is the lr here
     optimizer_e = tf.keras.optimizers.Adam(learning_rate=0.001)
-    optimizer_d = tf.keras.optimizers.Adam(learning_rate=0.001)
+    optimizer_d = tf.keras.optimizers.Adam(learning_rate=0.0001)
     optimizer_g = tf.keras.optimizers.Adam(learning_rate=0.001)
 
     @tf.function
@@ -167,6 +167,9 @@ def tgan(dataX, parameters, it):
             print(f"Iter: {itt} took {time.time() - start}s, G_loss: {step_g_loss.numpy():.4f}")
             start = time.time()
 
+        if itt > 6000:
+            break
+
     # Joint Training
     start = time.time()
     for itt, (X_mb, T_mb) in enumerate(dataset.take(iterations)):
@@ -185,6 +188,9 @@ def tgan(dataX, parameters, it):
         if itt % 1000 == 0:
             print(f"Iter: {itt} took {time.time() - start}s, D_loss: {step_d_loss.numpy():.4f}")
             start = time.time()
+
+        if itt > 5000:
+            break
 
     print('Finish Joint Training')
 
