@@ -3,5 +3,5 @@ sp500/
 timegan/mlforhealthlabpub/
 jane-street/data
 quantico/
-timegan.pem
+*.pem
 timegan/timegan/models/
