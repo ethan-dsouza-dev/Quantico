@@ -51,21 +51,40 @@ def google_data_loading (seq_length):
     x = MinMaxScaler(x)
     
     # Build dataset
-    dataX = []
+    # dataX = []
     
-    # Cut data by sequence length
-    for i in range(0, len(x) - seq_length):
-        _x = x[i:i + seq_length]
-        dataX.append(_x)
+    # # Cut data by sequence length
+    # for i in range(0, len(x) - seq_length):
+    #     _x = x[i:i + seq_length]
+    #     dataX.append(_x)
         
-    # Mix Data (to make it similar to i.i.d)
-    idx = np.random.permutation(len(dataX))
+    # # Mix Data (to make it similar to i.i.d)
+    # idx = np.random.permutation(len(dataX))
     
-    outputX = []
-    for i in range(len(dataX)):
-        outputX.append(dataX[idx[i]])
+    # outputX = []
+    # for i in range(len(dataX)):
+    #     outputX.append(dataX[idx[i]])
     
-    return outputX
+    # return outputX
+
+    # Remove old code and have it be continous
+    dataX = []
+    for i in range(0, len(x) - seq_length):
+        window = x[i : i + seq_length]
+        dataX.append(window)
+
+    # 5. Instead of shuffling, we keep them in chronological order
+    #    (Remove any np.random.permutation code)
+
+    # 6. Split each window into “context” (first seq_length-1 steps)
+    #    and “target” (final step).
+    contextX = []
+    targetY = []
+    for seq in dataX:
+        contextX.append(seq[:-1])   # shape => (seq_length-1, num_features)
+        targetY.append(seq[-1])     # shape => (num_features,)
+
+    return np.array(contextX), np.array(targetY)
   
 #%% Sine Data Generation
 

@@ -4,7 +4,8 @@ import numpy as np
 import tensorflow as tf
 import pickle
 import time
-from models import Embedder, Recovery, Generator, Supervisor, Discriminator
+# from models import Embedder, Recovery, Generator, Supervisor, Discriminator
+from models import Embedder, Recovery, ConditionalGenerator, Supervisor, Discriminator
 
 
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -60,7 +61,7 @@ def tgan(dataX, parameters, it):
     # Network Initialization
     embedder = Embedder(hidden_dim=hidden_dim, num_layers=num_layers)
     recovery = Recovery(data_dim=data_dim, hidden_dim=hidden_dim, num_layers=num_layers)
-    generator = Generator(hidden_dim=hidden_dim, num_layers=num_layers)
+    generator = ConditionalGenerator(hidden_dim=hidden_dim, num_layers=num_layers)
     supervisor = Supervisor(hidden_dim=hidden_dim, num_layers=num_layers)
     discriminator = Discriminator(hidden_dim=hidden_dim, num_layers=num_layers)
 

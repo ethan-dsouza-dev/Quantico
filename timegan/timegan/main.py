@@ -63,14 +63,15 @@ Sub_Iteration = 10
 seq_length = 24
 
 if data_name == 'google':
-    dataX = google_data_loading(seq_length)
+    contextX, dataX = google_data_loading(seq_length)
 elif data_name == 'sine':
     No = 10000
     F_No = 5
     dataX = sine_data_generation(No, seq_length, F_No)
 
 print(data_name + ' dataset is ready.')
-print(dataX)
+print(dataX[20])
+print(contextX[20])
 
 #%% Newtork Parameters
 parameters = dict()
