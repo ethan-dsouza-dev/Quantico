@@ -8,13 +8,36 @@ import time
 from models import Embedder, Recovery, ConditionalGenerator, Supervisor, Discriminator
 
 
-physical_devices = tf.config.list_physical_devices('GPU')
-if physical_devices:
-    print("TensorFlow is using Metal for GPU acceleration.")
-    for device in physical_devices:
-        print(f"GPU device detected: {device}")
-else:
-    print("No GPU found. TensorFlow is using CPU.")
+#physical_devices = tf.config.list_physical_devices('GPU')
+#if physical_devices:
+#    print("TensorFlow is using Metal for GPU acceleration.")
+#    for device in physical_devices:
+#        print(f"GPU device detected: {device}")
+#else:
+#    print("No GPU found. TensorFlow is using CPU.")
+
+try:
+    physical_devices = tf.config.list_physical_devices('GPU')
+    if physical_devices:
+        # Check if CUDA devices are available
+        cuda_devices = [device for device in physical_devices if 'CUDA' in device.device_type.upper()]
+        if cuda_devices:
+            print("TensorFlow is using CUDA for GPU acceleration.")
+            for device in cuda_devices:
+                print(f"CUDA GPU device detected: {device}")
+        else:
+            print("No CUDA GPU found. Checking for Metal acceleration...")
+            # Fallback to Metal
+            if 'TF_METAL' in os.environ:
+                print("TensorFlow is using Metal for GPU acceleration.")
+                for device in physical_devices:
+                    print(f"Metal GPU device detected: {device}")
+            else:
+                print("No Metal GPU found. TensorFlow is using CPU.")
+    else:
+        print("No GPU found. TensorFlow is using CPU.")
+except Exception as e:
+    print(f"An error occurred: {e}")
 
 # Min Max Normalizer
 def MinMaxScaler(dataX):
