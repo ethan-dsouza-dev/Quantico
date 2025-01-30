@@ -70,7 +70,7 @@ elif data_name == 'sine':
     dataX = sine_data_generation(No, seq_length, F_No)
 
 print(data_name + ' dataset is ready.')
-print(dataX)
+# print(dataX)
 
 #%% Newtork Parameters
 parameters = dict()
